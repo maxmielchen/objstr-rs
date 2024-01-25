@@ -1,0 +1,15 @@
+[package]
+edition = "2021"
+
+name = "objstr"
+version = "0.1.0"
+
+description = "File stream abstraction for Rust"
+repository = "https://github.com/maxmielchen/objstr-rs"
+readme = "README.md"
+authors = ["Max Mielchen <max@mielchen.email>"]
+license_file = "LICENSE"
+keywords = ["file", "stream", "abstraction", "rust"]
+categories = ["io", "no-std", "std"]
+
+[dependencies]
