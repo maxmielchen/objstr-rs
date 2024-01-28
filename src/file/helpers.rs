@@ -165,5 +165,6 @@ pub fn len_calc(inner_lens: Vec<u32>, op_sets: u8) -> i64 {
     for inner_len in inner_lens {
         len += inner_len as u64 + 2*OP_LEN as u64;
     }
-    len as i64 - OP_LEN as i64 * 2 * op_sets as i64
+    let len = len as i64 - OP_LEN as i64 * 2 * op_sets as i64;
+    len
 }

@@ -78,17 +78,32 @@ impl ObjStr for FileObjStr {
 
         seek_backward_n(&mut self.file, objs as u64)?;
 
-        let len = len_calc(inner_lens, contents).checked_abs();
+        let len = len_calc(inner_lens, contents);
 
-        if len == None {
+        if len < 0 {
             return Err(Error::new(ErrorKind::Other, "To small to fit that many objects"));
         }
         
-        Ok(len.unwrap() as u64)
+        Ok(len.abs() as u64)
     }
 
-    fn overwrite(&mut self, _data: Vec<Vec<u8>>, _objs: u8) -> Result<(), Error> {
-        todo!()
+    fn overwrite(&mut self, data: Vec<Vec<u8>>, objs: u8) -> Result<(), Error> {
+        if data.len() > u8::MAX as usize {
+            return Err(Error::new(ErrorKind::Other, "To many objects"));
+        }
+
+        let inner_len = self.len(data.len() as u8, objs)?;
+        let actual_len = data.iter().fold(0, |acc, x| acc + x.len()) as u64;
+
+        if inner_len != actual_len {
+            return Err(Error::new(ErrorKind::Other, "Wrong length"));
+        }
+
+        for d in data {
+            write(&mut self.file, d)?;
+        }
+
+        Ok(())
     }
 
     fn append(&mut self, data: Vec<u8>) -> Result<(), Error> {

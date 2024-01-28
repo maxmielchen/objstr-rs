@@ -63,5 +63,16 @@ fn test_example(){
 
     assert_eq!(str.len(1, 1).unwrap(), 13);
 
+    str.append(b"h".to_vec()).unwrap();
+    str.seek(SeekFrom::End(-1)).unwrap();
+
+    assert!(str.len(2, 1).is_err());
+
+    str.overwrite(vec![b"b".to_vec()], 1).unwrap();
+
+    str.seek(SeekFrom::Current(-1)).unwrap();
+
+    assert_eq!(str.read().unwrap(), b"b".to_vec());
+
     teardown("test_example");
 }
