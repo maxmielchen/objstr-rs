@@ -1,4 +1,4 @@
-use std::{fs::{File, OpenOptions}, io::{Error, SeekFrom}, path::Path};
+use std::{fs::{File, OpenOptions}, io::{Error, ErrorKind, SeekFrom}, path::Path};
 
 use crate::api::ObjStr;
 
@@ -78,12 +78,16 @@ impl ObjStr for FileObjStr {
 
         seek_backward_n(&mut self.file, objs as u64)?;
 
-        Ok(
-            len_calc(inner_lens, contents)
-        )
+        let len = len_calc(inner_lens, contents).checked_abs();
+
+        if len == None {
+            return Err(Error::new(ErrorKind::Other, "To small to fit that many objects"));
+        }
+        
+        Ok(len.unwrap() as u64)
     }
 
-    fn overwrite(&mut self, data: Vec<Vec<u8>>, objs: u8) -> Result<(), Error> {
+    fn overwrite(&mut self, _data: Vec<Vec<u8>>, _objs: u8) -> Result<(), Error> {
         todo!()
     }
 

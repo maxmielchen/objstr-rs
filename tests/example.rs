@@ -59,5 +59,9 @@ fn test_example(){
 
     assert_eq!(str.len(1, 2).unwrap(), 26 + 8);
 
+    str.seek(SeekFrom::Current(1)).unwrap();
+
+    assert_eq!(str.len(1, 1).unwrap(), 13);
+
     teardown("test_example");
 }
