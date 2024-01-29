@@ -8,6 +8,7 @@ description = "File stream abstraction for Rust"
 repository = "https://github.com/maxmielchen/objstr-rs"
 readme = "README.md"
 authors = ["Max Mielchen <max@mielchen.email>"]
+license = "Apache-2.0"
 license_file = "LICENSE"
 keywords = ["file", "stream", "abstraction", "rust"]
 categories = ["io", "no-std", "std"]
