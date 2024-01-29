@@ -31,9 +31,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - run: |
+          RELEASE_VERSION=${GITHUB_REF#refs/tags/}
+          CARGO_VERSION=$(awk -F' = ' '$1=="version"{print $2; exit}' Cargo.toml | tr -d '"')
+          if [ "$RELEASE_VERSION" != "$CARGO_VERSION" ]; then
+            echo "Release version ($RELEASE_VERSION) does not match Cargo.toml version ($CARGO_VERSION)"
+            exit 1
+          fi
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
+    - uses: actions-rs/cargo@v1
+      with:
+        command: publish
+        args: --dry-run
+    - uses: actions-rs/cargo@v1
+      with:
+        command: login
+        args: --token ${{ secrets.CRATES_API_TOKEN }}
     - uses: actions-rs/cargo@v1
       with:
         command: publish
