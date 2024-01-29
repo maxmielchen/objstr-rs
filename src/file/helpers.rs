@@ -29,13 +29,13 @@ pub fn jump_stream_end(file: &mut File) {
     file.seek(SeekFrom::End(-1)).unwrap();
 }
 
-pub fn catch_stream_end(file: &mut File, read: Result<usize, Error>) -> Result<(), Error> {
-    if read.unwrap() <= 1 {
-        jump_stream_end(file);
+pub fn catch_stream_read(file: &mut File, read: usize, predict: usize) -> Result<(), Error> {
+    if read != predict {
+        jump_stream_start(file);
         return Err(
             Error::new(
                 ErrorKind::UnexpectedEof,
-                "Reached end of file."
+                "Readed data length mismatch."
             )
         );
     }
@@ -69,24 +69,27 @@ pub fn read(file: &mut File) -> Result<Vec<u8>, Error> {
 
     let mut len_buf_left: [u8; OP_LEN as usize] = [0; OP_LEN as usize];
     let res = file.read(&mut len_buf_left);
-    catch_stream_end(
+    catch_stream_read(
         file,
-        res
+        res?,
+        OP_LEN as usize
     )?;
     let len_left = u32::from_be_bytes(len_buf_left) as usize;
 
     let mut data = vec![0; len_left];
     let res = file.read(&mut data);
-    catch_stream_end(
+    catch_stream_read(
         file,
-        res
+        res?,
+        len_left
     )?;
 
     let mut len_buf_right: [u8; OP_LEN as usize] = [0; OP_LEN as usize];
     let res = file.read(&mut len_buf_right);
-    catch_stream_end(
+    catch_stream_read(
         file,
-        res
+        res?,
+        OP_LEN as usize
     )?;
     let len_right = u32::from_be_bytes(len_buf_right) as usize;
     
@@ -101,9 +104,10 @@ pub fn seek_forward(file: &mut File) -> Result<(), Error> {
     let mut len_buf: [u8; OP_LEN as usize] = [0; OP_LEN as usize];
 
     let res = file.read(&mut len_buf);
-    catch_stream_end(
+    catch_stream_read(
         file,
-        res
+        res?,
+        OP_LEN as usize
     )?;
     let len = u32::from_be_bytes(len_buf) as i64;
 
@@ -120,14 +124,15 @@ pub fn seek_backward(file: &mut File) -> Result<(), Error> {
     file.seek(SeekFrom::Current(-(OP_LEN as i64))).unwrap();
 
     let res = file.read(&mut len_buf);
-    catch_stream_end(
+    catch_stream_read(
         file,
-        res
+        res?,
+        OP_LEN as usize
     )?;
 
     let len = u32::from_be_bytes(len_buf) as i64;
 
-    file.seek(SeekFrom::Current(-(len + 2*OP_LEN as i64)))?;
+    file.seek(SeekFrom::Current(-len -2*OP_LEN as i64))?;
 
     Ok(())
 }
@@ -149,9 +154,10 @@ pub fn seek_backward_n(file: &mut File, n: u64) -> Result<(), Error> {
 pub fn inner_len(file: &mut File) -> Result<u32, Error> {
     let mut len_buf: [u8; OP_LEN as usize] = [0; OP_LEN as usize];
     let res = file.read(&mut len_buf);
-    catch_stream_end(
+    catch_stream_read(
         file,
-        res
+        res?,
+        OP_LEN as usize
     )?;
     let len = u32::from_be_bytes(len_buf) as u32;
 
