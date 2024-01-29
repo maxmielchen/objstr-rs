@@ -1,12 +1,21 @@
-name: Testing
+name: Pull Request
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@3
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - uses: actions-rs/cargo@v1
+      with:
+        command: build
+    
   test:
     runs-on: ubuntu-latest
     steps:
@@ -17,4 +26,3 @@ jobs:
     - uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --vorbose
