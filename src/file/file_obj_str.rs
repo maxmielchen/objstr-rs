@@ -41,7 +41,7 @@ impl ObjStr for FileObjStr {
         match pos {
             SeekFrom::Start(pos) => {
                 jump_stream_start(&mut self.file);
-                seek_backward_n(&mut self.file, pos)?;
+                seek_forward_n(&mut self.file, pos)?;
             },
             SeekFrom::End(pos) => {
                 jump_stream_end(&mut self.file);
