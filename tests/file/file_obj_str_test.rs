@@ -209,8 +209,6 @@ fn test_cut_random() {
     let bytes = teardown("test_cut_random");
 
     assert_eq!(bytes, b"\x00\x00\x00\x0dHello, world1\x00\x00\x00\x0d\x00".to_vec());
-
-    let _ = teardown("test_cut_random");
 }
 
 #[test]
@@ -227,8 +225,6 @@ fn test_cut_start() {
     let bytes = teardown("test_cut_start");
 
     assert_eq!(bytes, b"\x00".to_vec());
-
-    let _ = teardown("test_cut_start");
 }
 
 #[test]
@@ -245,8 +241,6 @@ fn test_cut_end() {
     let bytes = teardown("test_cut_end");
 
     assert_eq!(bytes, b"\x00\x00\x00\x0dHello, world1\x00\x00\x00\x0d\x00\x00\x00\x0dHello, world2\x00\x00\x00\x0d\x00".to_vec());
-
-    let _ = teardown("test_cut_end");
 }
 
 #[test]
