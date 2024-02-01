@@ -251,29 +251,15 @@ pub fn seek_backward(file: &mut File) -> Result<(), Error> {
 }
 
 pub fn seek_forward_n(file: &mut File, n: u64) -> Result<(), Error> {
-    for times in 0..n {
-        let res = seek_forward(file);
-        if let Err(e) = res {
-            let pan = seek_backward_n(file, times);
-            if let Err(e) = pan {
-                panic!("Failed to seek forward: {}", e);
-            }
-            return Err(e);
-        }
+    for _ in 0..n {
+        seek_forward(file)?;
     }
     Ok(())
 }
 
 pub fn seek_backward_n(file: &mut File, n: u64) -> Result<(), Error> {
-    for times in 0..n {
-        let res = seek_backward(file);
-        if let Err(e) = res {
-            let pan = seek_forward_n(file, times);
-            if let Err(e) = pan {
-                panic!("Failed to seek backward: {}", e);
-            }
-            return Err(e);
-        }
+    for _ in 0..n {
+        seek_backward(file)?;
     }
     Ok(())
 }
