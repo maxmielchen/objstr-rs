@@ -1,19 +1,27 @@
-use std::{io::SeekFrom, path::Path};
+use std::{fs, io::SeekFrom, path::Path};
 
 use objstr::{api::ObjStr as _, file::FileObjStr};
 
 fn setup(name: &str) -> FileObjStr {
-    FileObjStr::new(Path::new(
-        format!("target/tmp/file_obj_str_test_{}.bin", name).as_str()
-    )).unwrap()
+    let name = format!(".test/file/file_obj_str_test/{}.bin", name);
+    let path = Path::new(
+        name.as_str()
+    );
+    if path.exists() {
+        std::fs::remove_file(
+            name.as_str()
+        ).unwrap();
+    }
+    fs::create_dir_all(path.parent().unwrap()).unwrap();
+    FileObjStr::new(path).unwrap()
 }
 
 fn teardown(name: &str) -> Vec<u8> {
     let bytes = std::fs::read(
-        format!("target/tmp/file_obj_str_test_{}.bin", name).as_str()
+        format!(".test/file/file_obj_str_test/{}.bin", name).as_str()
     ).unwrap();
     std::fs::remove_file(
-        format!("target/tmp/file_obj_str_test_{}.bin", name).as_str()
+        format!(".test/file/file_obj_str_test/{}.bin", name).as_str()
     ).unwrap();
     bytes
 }
@@ -56,11 +64,6 @@ fn test_seek_start_forward() {
     let _ = teardown("test_seek_start_forward");
 }
 
-// #[test]
-// fn test_seek_start_backward() {
-
-// }
-
 #[test]
 fn test_seek_current_forward() {
     let mut str = setup("test_seek_current_forward");
@@ -91,10 +94,19 @@ fn test_seek_current_backward() {
     let _ = teardown("test_seek_current_backward");
 }
 
-// #[test]
-// fn test_seek_end_forward() {
+#[test]
+fn test_seek_end_forward() {
+    let mut str = setup("test_seek_end_forward");
 
-// }
+    str.append(b"Hello, world1".to_vec()).unwrap();
+    str.append(b"Hello, world2".to_vec()).unwrap();
+
+    str.seek(SeekFrom::End(1)).unwrap();
+
+    assert_eq!(str.read().unwrap(), b"Hello, world2".to_vec());
+
+    let _ = teardown("test_seek_end_forward");
+}
 
 #[test]
 fn test_seek_end_backward() {
@@ -258,10 +270,18 @@ fn test_overwrite_0_0() {
     assert_eq!(bytes, b"\x00\x00\x00\x0dHello, world1\x00\x00\x00\x0d\x00".to_vec());
 }
 
-// #[test]
-// fn test_overwrite_0_1() {
+#[test]
+fn test_overwrite_0_1() {
+    let mut str = setup("test_overwrite_0_1");
 
-// }
+    str.append(b"Hello, world1".to_vec()).unwrap();
+
+    str.seek(SeekFrom::Start(0)).unwrap();
+
+    assert!(str.overwrite(vec![b"Hello, world2".to_vec()], 0).is_err());
+
+    let _ = teardown("test_overwrite_0_1");
+}
 
 #[test]
 fn test_overwrite_1_1() {
@@ -316,15 +336,81 @@ fn test_overwrite_2_1() {
 // MORE ERRORS
 
 
+#[test] 
+fn test_seek_start_forward_error() {
+    let mut str = setup("test_seek_start_forward_error");
 
+    str.append(b"Hello, world1".to_vec()).unwrap();
+    str.append(b"Hello, world2".to_vec()).unwrap();
 
+    assert!(str.seek(SeekFrom::Start(100)).is_err());
 
+    assert!(str.read().is_err());
 
+    let _ = teardown("test_seek_start_forward_error");
+}
 
+#[test]
+fn test_seek_current_forward_error() {
+    let mut str = setup("test_seek_current_forward_error");
 
+    str.append(b"Hello, world1".to_vec()).unwrap();
+    str.append(b"Hello, world2".to_vec()).unwrap();
 
+    
+    assert!(str.seek(SeekFrom::Start(0)).is_ok());
+    assert!(str.seek(SeekFrom::Current(100)).is_err());
 
+    assert!(str.read().is_err());
 
+    let _ = teardown("test_seek_current_forward_error");
+}
+
+#[test]
+fn test_seek_current_backward_error() {
+    let mut str = setup("test_seek_current_backward_error");
+
+    str.append(b"Hello, world1".to_vec()).unwrap();
+    str.append(b"Hello, world2".to_vec()).unwrap();
+
+    
+    assert!(str.seek(SeekFrom::End(0)).is_ok());
+    assert!(str.seek(SeekFrom::Current(-100)).is_err());
+
+    assert_eq!(str.read().unwrap(), b"Hello, world1".to_vec());
+
+    let _ = teardown("test_seek_current_backward_error");
+}
+
+#[test]
+fn test_seek_end_forward_error() {
+    let mut str = setup("test_seek_end_forward_error");
+
+    str.append(b"Hello, world1".to_vec()).unwrap();
+    str.append(b"Hello, world2".to_vec()).unwrap();
+
+    
+    assert!(str.seek(SeekFrom::End(100)).is_err());
+
+    assert_eq!(str.read().unwrap(), b"Hello, world1".to_vec());
+
+    let _ = teardown("test_seek_end_forward_error");
+}
+
+#[test]
+fn test_seek_end_backward_error() {
+    let mut str = setup("test_seek_end_backward_error");
+
+    str.append(b"Hello, world1".to_vec()).unwrap();
+    str.append(b"Hello, world2".to_vec()).unwrap();
+
+    
+    assert!(str.seek(SeekFrom::End(-100)).is_err());
+
+    assert_eq!(str.read().unwrap(), b"Hello, world1".to_vec());
+
+    let _ = teardown("test_seek_end_backward_error");
+}
 
 
 
