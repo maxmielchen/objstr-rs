@@ -2,7 +2,7 @@
 edition = "2021"
 
 name = "objstr"
-version = "0.1.0"
+version = "0.1.1"
 
 description = "File stream abstraction for Rust"
 repository = "https://github.com/maxmielchen/objstr-rs"
